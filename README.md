@@ -1,6 +1,6 @@
 - Iniciei utilizando as especificações do problema e, principalmente, as configurações pré estabelecidas nos arquivos enviados
 - Criando a arquitetura básica do projeto, para ter a organização desde o início
-    ```mkdir src\config, src\controllers, src\database, src\models, src\routes, src\services, src\utils```
+    ```mkdir src\controllers, src\database, src\models, src\routes, src\service``
 A estrutura src/{config,controllers,database,models,routes,services,utils} segue o princípio de Separação de Responsabilidades, garantindo clareza, manutenção e escalabilidade do código.
 routes: Define as URLs e os métodos HTTP, encaminhando as requisições para os controladores.
 controllers: Intermediam entre requisições HTTP e a lógica de negócio, validando dados e chamando os serviços adequados.
