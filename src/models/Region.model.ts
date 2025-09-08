@@ -1,39 +1,48 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document } from 'mongoose';
 
-// Interface para o objeto GeoJSON Polygon
+/**
+ * GeoJSON Polygon structure for coordinates.
+ */
 interface IPolygon {
-  type: "Polygon";
-  coordinates: number[][][]; // Array de anéis de coordenadas lineares
+  type: 'Polygon';
+  coordinates: number[][][];
 }
 
-// Interface para o nosso documento de Região
+/**
+ * Region document interface.
+ */
 export interface IRegion extends Document {
   name: string;
   coordinates: IPolygon;
 }
 
-const RegionSchema = new Schema<IRegion>({
-  name: {
-    type: String,
-    required: true,
-  },
-  coordinates: {
-    type: {
+const RegionSchema = new Schema<IRegion>(
+  {
+    name: {
       type: String,
-      enum: ["Polygon"], // 'coordinates' só pode ser do tipo Polygon
       required: true,
+      trim: true,
     },
     coordinates: {
-      type: [[[Number]]], // Array de anéis de [long, lat]
-      required: true,
+      type: {
+        type: String,
+        enum: ['Polygon'],
+        required: true,
+      },
+      coordinates: {
+        type: [[[Number]]],
+        required: true,
+      },
     },
   },
-});
+  {
+    timestamps: true, // Adds createdAt and updatedAt automatically
+  },
+);
 
-// CRÍTICO: Crie o índice geoespacial
-// Isso é o que permite que as queries de geolocalização sejam rápidas e eficientes.
-RegionSchema.index({ coordinates: "2dsphere" });
+// 2dsphere index for geospatial queries
+RegionSchema.index({ coordinates: '2dsphere' });
 
-const Region = model<IRegion>("Region", RegionSchema);
+const Region = model<IRegion>('Region', RegionSchema);
 
 export default Region;

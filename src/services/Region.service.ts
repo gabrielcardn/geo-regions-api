@@ -1,90 +1,78 @@
-import Region, { IRegion } from "../models/Region.model";
-import GeocodingService from "./Geocoding.service";
+import Region, { IRegion } from "../models/Region.model.js";
+import { IPoint } from "../types/geo.js";
+import GeocodingService from "./Geocoding.service.js";
 
-// Interface para definir a estrutura de um ponto
-interface IPoint {
-  latitude: number;
-  longitude: number;
-}
-
+/**
+ * Service for region-related business logic.
+ */
 class RegionService {
+  /** Create a new region */
   public async create(
     regionData: Omit<IRegion, "_id" | "createdAt" | "updatedAt">,
   ): Promise<IRegion> {
-    // A 'omit' é uma boa prática para garantir que não estamos recebendo IDs ou timestamps
-    // Garante que os dados de entrada não contenham campos gerados pelo sistema (como _id).    
-    
     const newRegion = new Region(regionData);
-    await newRegion.save();
-    return newRegion;
+    return newRegion.save();
   }
 
-  // Listar todas as regiões
+  /** Retrieve all regions */
   public async findAll(): Promise<IRegion[]> {
-    const regions = await Region.find();
-    return regions;
+    return Region.find();
   }
 
-  // Encontrar uma região pelo ID
+  /** Retrieve a region by ID */
   public async findById(id: string): Promise<IRegion | null> {
-    const region = await Region.findById(id);
-    return region; // Retorna o documento ou null se não encontrar
+    return Region.findById(id);
   }
 
-  // Encontrar regiões que contêm um ponto
+  /** Find regions containing a geographic point */
   public async findContainingPoint(point: IPoint): Promise<IRegion[]> {
     const { longitude, latitude } = point;
-
-    // A query do MongoDB espera um formato específico para o ponto GeoJSON
     const geoJsonPoint = {
-      type: "Point",
-      coordinates: [longitude, latitude], // IMPORTANTE: A ordem é [longitude, latitude]
+      type: "Point" as const,
+      coordinates: [longitude, latitude],
     };
 
-    const regions = await Region.find({
+    return Region.find({
       coordinates: {
-        // O campo do nosso schema
         $geoIntersects: {
-          // O operador que verifica a intersecção
-          $geometry: geoJsonPoint, // A geometria que queremos verificar (nosso ponto)
+          $geometry: geoJsonPoint,
         },
       },
     });
-
-    return regions;
   }
 
-  // Encontrar regiões próximas a um ponto
+  /** Find regions near a geographic point within a distance */
   public async findNearPoint(point: IPoint, maxDistance: number): Promise<IRegion[]> {
     const { longitude, latitude } = point;
 
-    const regions = await Region.find({
+    return Region.find({
       coordinates: {
         $nearSphere: {
           $geometry: {
             type: "Point",
-            coordinates: [longitude, latitude], // Lembre-se: [longitude, latitude]
+            coordinates: [longitude, latitude],
           },
-          // $maxDistance espera o valor em METROS
           $maxDistance: maxDistance,
         },
       },
     });
-
-    return regions;
   }
 
+  /** Find regions containing an address by geocoding it first */
   public async findByAddress(address: string): Promise<IRegion[]> {
-    // 2. Chama o serviço de geocoding
     const point = await GeocodingService.getCoordsFromAddress(address);
-
-    if (!point) {
-      // Se o endereço não foi encontrado, retorna uma lista vazia
-      return [];
-    }
-
-    // 3. Reutiliza a função que já tínhamos!
+    if (!point) return [];
     return this.findContainingPoint(point);
+  }
+
+  /** Update a region by ID */
+  public async update(id: string, regionData: Partial<IRegion>): Promise<IRegion | null> {
+    return Region.findByIdAndUpdate(id, { $set: regionData }, { new: true });
+  }
+
+  /** Delete a region by ID */
+  public async delete(id: string): Promise<IRegion | null> {
+    return Region.findByIdAndDelete(id);
   }
 }
 

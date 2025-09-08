@@ -1,24 +1,28 @@
 import axios from "axios";
 import "dotenv/config";
+import { IPoint } from "../types/geo";
 
-interface IPoint {
-  latitude: number;
-  longitude: number;
-}
-
+/**
+ * Service for geocoding addresses using Nominatim API.
+ */
 class GeocodingService {
-  private readonly nominatimApi = "https://nominatim.openstreetmap.org/search";
+  private readonly nominatimApiUrl = "https://nominatim.openstreetmap.org/search";
 
+  /**
+   * Converts an address string to geographic coordinates.
+   * @param address Address to geocode
+   * @returns Coordinates as IPoint or null if not found
+   */
   public async getCoordsFromAddress(address: string): Promise<IPoint | null> {
-    const countryCode = process.env.COUNTRY_CODE || "BR"; // Padrão 'BR' se não definido
+    const countryCode = process.env.COUNTRY_CODE || "BR";
 
     try {
-      const response = await axios.get(this.nominatimApi, {
+      const response = await axios.get(this.nominatimApiUrl, {
         params: {
-          q: address, // O endereço que queremos buscar
-          format: "json", // Queremos a resposta em JSON
-          countrycodes: countryCode, // Filtra os resultados pelo país
-          limit: 1, // Queremos apenas o resultado mais provável
+          q: address,
+          format: "json",
+          countrycodes: countryCode,
+          limit: 1,
         },
       });
 
@@ -30,10 +34,9 @@ class GeocodingService {
         };
       }
 
-      return null; // Endereço não encontrado
+      return null;
     } catch (error) {
       console.error("Error fetching data from Nominatim:", error);
-      // Em um app real, teríamos um tratamento de erro mais robusto
       throw new Error("Failed to geocode address");
     }
   }
