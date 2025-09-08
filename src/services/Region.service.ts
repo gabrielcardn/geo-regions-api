@@ -9,10 +9,11 @@ interface IPoint {
 
 class RegionService {
   public async create(
-    regionData: Omit<IRegion, "_id" | "createdAt" | "updatedAt">
+    regionData: Omit<IRegion, "_id" | "createdAt" | "updatedAt">,
   ): Promise<IRegion> {
-    // A 'omit' é uma boa prática para garantir que não estamos recebendo IDs ou timestamps (explicar melhor)
-
+    // A 'omit' é uma boa prática para garantir que não estamos recebendo IDs ou timestamps
+    // Garante que os dados de entrada não contenham campos gerados pelo sistema (como _id).    
+    
     const newRegion = new Region(regionData);
     await newRegion.save();
     return newRegion;
@@ -53,7 +54,7 @@ class RegionService {
     return regions;
   }
 
-   // Encontrar regiões próximas a um ponto
+  // Encontrar regiões próximas a um ponto
   public async findNearPoint(point: IPoint, maxDistance: number): Promise<IRegion[]> {
     const { longitude, latitude } = point;
 
@@ -61,19 +62,19 @@ class RegionService {
       coordinates: {
         $nearSphere: {
           $geometry: {
-            type: 'Point',
-            coordinates: [longitude, latitude] // Lembre-se: [longitude, latitude]
+            type: "Point",
+            coordinates: [longitude, latitude], // Lembre-se: [longitude, latitude]
           },
           // $maxDistance espera o valor em METROS
-          $maxDistance: maxDistance
-        }
-      }
+          $maxDistance: maxDistance,
+        },
+      },
     });
 
     return regions;
   }
 
-   public async findByAddress(address: string): Promise<IRegion[]> {
+  public async findByAddress(address: string): Promise<IRegion[]> {
     // 2. Chama o serviço de geocoding
     const point = await GeocodingService.getCoordsFromAddress(address);
 

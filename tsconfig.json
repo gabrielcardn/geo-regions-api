@@ -7,7 +7,10 @@
     "sourceMap": true,
     "esModuleInterop": true,
   },
-  "types": ["reflect-metadata", "mocha"],
+  "types": [
+    "reflect-metadata",
+    "mocha"
+  ],
   "exclude": [
     "node_modules"
   ]

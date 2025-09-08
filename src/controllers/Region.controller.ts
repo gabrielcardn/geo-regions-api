@@ -14,6 +14,7 @@ class RegionController {
       return res.status(201).json(newRegion);
     } catch (error) {
       // Em um projeto real, teríamos um log mais detalhado aqui
+      console.error(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -23,6 +24,7 @@ class RegionController {
       const regions = await RegionService.findAll();
       return res.status(200).json(regions);
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -39,6 +41,7 @@ class RegionController {
       return res.status(200).json(region);
     } catch (error) {
       // Este erro pode acontecer se o ID for inválido (não for um ObjectId do Mongo)
+      console.error(error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -79,12 +82,10 @@ class RegionController {
       const { lat, lng, distance } = req.query;
 
       if (!lat || !lng || !distance) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Latitude (lat), Longitude (lng), and Distance (distance) query parameters are required",
-          });
+        return res.status(400).json({
+          message:
+            "Latitude (lat), Longitude (lng), and Distance (distance) query parameters are required",
+        });
       }
 
       const point = {
